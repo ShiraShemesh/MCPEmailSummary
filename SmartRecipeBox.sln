@@ -1,0 +1,24 @@
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.5.2.0
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SmartRecipeBox", "SmartRecipeBox.csproj", "{5D3F1A00-64D4-B2CF-5EA5-FEC2C80FA275}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{5D3F1A00-64D4-B2CF-5EA5-FEC2C80FA275}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5D3F1A00-64D4-B2CF-5EA5-FEC2C80FA275}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5D3F1A00-64D4-B2CF-5EA5-FEC2C80FA275}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5D3F1A00-64D4-B2CF-5EA5-FEC2C80FA275}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {DF4E8D18-FE81-44A6-99A1-F0AFBB6A4884}
+	EndGlobalSection
+EndGlobal

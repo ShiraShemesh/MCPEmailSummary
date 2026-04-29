@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>מנהל המיילים החכם שלי 🛡️</title>
+    <style>
+        :root {
+            --primary: #1a73e8;
+            --bg: #f1f3f4;
+            --card-bg: #ffffff;
+            --text-main: #202124;
+            --accent: #34a853;
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background-color: var(--bg);
+            color: var(--text-main);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .container {
+            max-width: 800px;
+            width: 100%;
+        }
+
+        header {
+            background: var(--card-bg);
+            padding: 20px 30px;
+            border-radius: 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            margin-bottom: 25px;
+        }
+
+        .buttons-group {
+            display: flex;
+            gap: 10px;
+        }
+
+        button {
+            padding: 10px 20px;
+            border-radius: 8px;
+            border: none;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        #btnProcess {
+            background-color: var(--primary);
+            color: white;
+        }
+
+        #btnLogin {
+            background-color: #f8f9fa;
+            color: #5f6368;
+            border: 1px solid #dadce0;
+        }
+
+        button:hover:not(:disabled) {
+            filter: brightness(0.9);
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+        }
+
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .result-card {
+            background: var(--card-bg);
+            padding: 30px;
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            display: none;
+        }
+
+        .summary-section h3 {
+            margin-top: 0;
+            color: var(--primary);
+            border-bottom: 2px solid #e8f0fe;
+            padding-bottom: 10px;
+        }
+
+        #summaryText {
+            line-height: 1.7;
+            font-size: 1.1em;
+            white-space: pre-wrap;
+        }
+
+        .draft-box {
+            background: #fdf7ed;
+            border: 1px solid #f9ab00;
+            padding: 20px;
+            border-radius: 12px;
+            margin-top: 25px;
+        }
+
+        .draft-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: #b06000;
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+
+        .draft-content {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid #eee;
+            font-style: italic;
+            color: #3c4043;
+        }
+
+        .loader {
+            display: none;
+            text-align: center;
+            margin: 40px 0;
+        }
+
+        .spinner {
+            border: 4px solid rgba(0, 0, 0, 0.1);
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            border-left-color: var(--primary);
+            animation: spin 1s linear infinite;
+            display: inline-block;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+        <header>
+            <h2 style="margin:0;">סוכן מיילים AI 🤖</h2>
+            <div class="buttons-group">
+                <button id="btnLogin">החלף חשבון</button>
+                <button id="btnProcess">סרוק וסכם מיילים</button>
+            </div>
+        </header>
+
+        <div id="loader" class="loader">
+            <div class="spinner"></div>
+            <p>הבינה המלאכותית מנתחת את המיילים שלך...</p>
+        </div>
+
+        <div id="resultCard" class="result-card">
+            <div class="summary-section">
+                <h3>סיכום המיילים האחרונים</h3>
+                <div id="summaryText"></div>
+            </div>
+
+            <div id="draftSection"></div>
+        </div>
+    </div>
+
+    <script>
+        const btnProcess = document.getElementById('btnProcess');
+        const btnLogin = document.getElementById('btnLogin');
+        const loader = document.getElementById('loader');
+        const resultCard = document.getElementById('resultCard');
+        const summaryText = document.getElementById('summaryText');
+        const draftSection = document.getElementById('draftSection');
+
+
+        btnLogin.addEventListener('click', async () => {
+            if (confirm("האם ברצונך להתנתק?")) {
+                const response = await fetch('/api/Mail/logout', { method: 'POST' });
+                if (response.ok) {
+                    alert("התנתקת בהצלחה. בפעם הבאה שתסרקי, תצטרכי לבחור חשבון מחדש.");
+                    location.reload();
+                }
+            }
+        });
+
+        btnProcess.addEventListener('click', async () => {
+            btnProcess.disabled = true;
+            loader.style.display = 'block';
+            resultCard.style.display = 'none';
+            draftSection.innerHTML = '';
+
+            try {
+                const response = await fetch('/api/Mail/summarize');
+                if (!response.ok) throw new Error("שגיאה בתקשורת עם השרת");
+
+                const data = await response.json();
+
+                console.log("Data received from AI:", data);
+
+                summaryText.innerText = data.summary || data.Summary || "לא נמצא סיכום.";
+                resultCard.style.display = 'block';
+
+                const needsReply = data.needsReply || data.NeedsReply;
+                const replyText = data.suggestedReply || data.SuggestedReply;
+
+                if (needsReply && replyText) {
+                    draftSection.innerHTML = `
+                    <div class="draft-box">
+                        <div class="draft-header">
+                            <span>📝 הצעה למענה אוטומטי</span>
+                        </div>
+                        <div class="draft-content">
+                            ${replyText}
+                        </div>
+                        <p style="font-size: 0.85em; color: #666; margin-top: 10px;">
+                            * הטיוטה נוצרה ומחכה לך בתיקיית ה-Drafts ב-Gmail שלך.
+                        </p>
+                    </div>
+                `;
+                } else {
+                    draftSection.innerHTML = `
+                    <p style="color: #666; margin-top: 20px; font-size: 0.9em;">
+                        ✅ לא נמצאו מיילים שדורשים מענה דחוף כרגע (לפי החלטת ה-AI).
+                    </p>
+                `;
+                }
+
+            } catch (error) {
+                console.error("Error details:", error);
+                summaryText.innerHTML = `<span style="color:red;">שגיאה: ${error.message}</span>`;
+                resultCard.style.display = 'block';
+            } finally {
+                btnProcess.disabled = false;
+                loader.style.display = 'none';
+            }
+        });
+           btnProcess.addEventListener('click', async () => {
+        btnProcess.disabled = true;
+        loader.style.display = 'block';
+        resultCard.style.display = 'none';
+        draftSection.innerHTML = '';
+
+        try {
+            const response = await fetch('/api/Mail/summarize');
+            if (!response.ok) throw new Error("שגיאה בתקשורת עם השרת");
+
+            const data = await response.json();
+
+            console.log("Data received from AI:", data);
+
+            summaryText.innerText = data.summary || data.Summary || "לא נמצא סיכום.";
+            resultCard.style.display = 'block';
+
+            const needsReply = data.needsReply || data.NeedsReply;
+            const draftReplies = data.draftReplies || data.DraftReplies || [];
+
+            if (needsReply && draftReplies.length > 0) {
+                let draftsHtml = '';
+                draftReplies.forEach((draft, index) => {
+                    draftsHtml += `
+                    <div class="draft-box">
+                        <div class="draft-header">
+                            <span>📝 טיוטה ${index + 1} - תשובה ל-(${draft.targetSenderName || draft.TargetSenderName})</span>
+                        </div>
+                        <div class="draft-content">
+                            ${draft.reply || draft.Reply}
+                        </div>
+                        <p style="font-size: 0.85em; color: #666; margin-top: 10px;">
+                            * הטיוטה נוצרה ומחכה לך בתיקיית ה-Drafts ב-Gmail שלך.
+                        </p>
+                    </div>
+                `;
+                });
+                draftSection.innerHTML = draftsHtml;
+            } else {
+                draftSection.innerHTML = `
+                    <p style="color: #666; margin-top: 20px; font-size: 0.9em;">
+                        ✅ לא נמצאו מיילים שדורשים מענה דחוף כרגע (לפי החלטת ה-AI).
+                    </p>
+                `;
+            }
+
+        } catch (error) {
+            console.error("Error details:", error);
+            summaryText.innerHTML = `<span style="color:red;">שגיאה: ${error.message}</span>`;
+            resultCard.style.display = 'block';
+        } finally {
+            btnProcess.disabled = false;
+            loader.style.display = 'none';
+        }
+    });
+    </script>
+
+</body>
+
+</html>

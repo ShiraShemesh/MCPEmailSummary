@@ -1,0 +1,35 @@
+# Secrets & Configuration
+appsettings.json
+appsettings.*.json
+*.user
+*.suo
+
+# Google Authentication
+SecureTokenStore/
+SecureTokenStore/**
+
+# Environment Variables
+.env
+.env.local
+.env.*.local
+
+# Build & Dependencies
+bin/
+obj/
+.vs/
+.vscode/
+node_modules/
+
+# Logs
+logs/
+*.log
+*.logs
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.idea/
+*.swp
+*.swo
